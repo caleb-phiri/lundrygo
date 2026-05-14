@@ -50,8 +50,14 @@ return [
     |
     */
 
-    'expiration' => null,
+      /*'expiration' => null,*/
+'expiration' => env('SANCTUM_EXPIRATION', 10080), // 7 days in minutes
 
+'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
+    '%s%s',
+    'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
+    Sanctum::currentApplicationUrlWithPort()
+))),
     /*
     |--------------------------------------------------------------------------
     | Token Prefix
@@ -83,5 +89,6 @@ return [
         'encrypt_cookies' => EncryptCookies::class,
         'validate_csrf_token' => ValidateCsrfToken::class,
     ],
+
 
 ];

@@ -34,5 +34,35 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+// Add to config/services.php
+'google' => [
+    'maps_api_key' => env('GOOGLE_MAPS_API_KEY', ''),
+],
 
+'mapbox' => [
+    'access_token' => env('MAPBOX_ACCESS_TOKEN', ''),
+],
+
+'map' => [
+    'provider' => env('MAP_PROVIDER', 'google'), // google, mapbox
+    'use_fallback' => env('MAP_USE_FALLBACK', true),
+],
+
+'delivery' => [
+    'base_fee' => env('DELIVERY_BASE_FEE', 5.00),
+    'per_km_rate' => env('DELIVERY_PER_KM_RATE', 1.50),
+    'min_fee' => env('DELIVERY_MIN_FEE', 5.00),
+    'max_fee' => env('DELIVERY_MAX_FEE', 25.00),
+    'express_multiplier' => env('DELIVERY_EXPRESS_MULTIPLIER', 1.5),
+],
+'twilio' => [
+    'sid' => env('TWILIO_SID'),
+    'token' => env('TWILIO_TOKEN'),
+    'from_number' => env('TWILIO_FROM_NUMBER'),
+],
+
+'firebase' => [
+    'enabled' => env('FIREBASE_ENABLED', false),
+    'credentials_path' => env('FIREBASE_CREDENTIALS_PATH'),
+],
 ];

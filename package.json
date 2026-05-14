@@ -1,10 +1,9 @@
 {
-    "$schema": "https://www.schemastore.org/package.json",
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "build": "vite build"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -21,6 +20,10 @@
         "@stripe/stripe-js": "^9.4.0",
         "alpinejs": "^3.15.12",
         "leaflet": "^1.9.4",
-        "pusher-js": "^8.5.0"
+        "pusher-js": "^8.5.0",
+        "chart.js": "^4.4.0",
+        "bootstrap": "^5.3.0",
+        "jquery": "^3.7.0",
+        "@popperjs/core": "^2.11.0"
     }
 }
