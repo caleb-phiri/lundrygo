@@ -55,12 +55,57 @@
                             </table>
                         </div>
                     </div>
-                    
+                    <!-- Add this after the Customer Information section -->
+<div class="row mt-3">
+    <div class="col-md-12">
+        <h6>Rider Information</h6>
+        @if($order->rider)
+            <div class="alert alert-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong><i class="fas fa-motorcycle"></i> Assigned Rider:</strong>
+                        <div class="mt-2">
+                            <strong>Name:</strong> {{ $order->rider->name }}<br>
+                            <strong>Email:</strong> {{ $order->rider->email }}<br>
+                            @if($order->rider->phone)
+                            <strong>Phone:</strong> {{ $order->rider->phone }}
+                            @endif
+                        </div>
+                        @if($order->rider_assigned_at)
+                        <small class="text-muted">Assigned on: {{ $order->rider_assigned_at->format('F j, Y g:i A') }}</small>
+                        @endif
+                    </div>
+                    <div>
+                        <a href="{{ route('admin.orders.assign-rider', $order) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-sync-alt"></i> Change Rider
+                        </a>
+                        <a href="{{ route('admin.orders.unassign-rider', $order) }}" 
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Are you sure you want to unassign this rider?')">
+                            <i class="fas fa-user-times"></i> Unassign
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @else
+            <div class="alert alert-warning">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-exclamation-triangle"></i> No rider assigned to this order yet.
+                    </div>
+                    <a href="{{ route('admin.orders.assign-rider', $order) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-user-plus"></i> Assign Rider
+                    </a>
+                </div>
+            </div>
+        @endif
+    </div>
+</div>
                     <!-- Order Items -->
                     <h6 class="mt-3">Order Items</h6>
                     <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
+                        <table class="table table-bordered">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Service</th>
                                     <th>Quantity</th>
@@ -71,21 +116,58 @@
                             <tbody>
                                 @foreach($order->items as $item)
                                 <tr>
-                                    <td>{{ $item->service->name ?? 'N/A' }}</td>
+                                    <td>{{ $item->service_name ?? $item->item_name ?? 'Service #' . $item->service_id }}</td>
                                     <td>{{ $item->quantity }}</td>
-                                    <td>${{ number_format($item->price, 2) }}</td>
-                                    <td>${{ number_format($item->quantity * $item->price, 2) }}</td>
+                                    <td>${{ number_format($item->unit_price ?? 0, 2) }}</td>
+                                    <td>${{ number_format(($item->unit_price ?? 0) * $item->quantity, 2) }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot>
+                            <tfoot class="table-active">
                                 <tr>
+                                    <th colspan="3" class="text-end">Subtotal:</th>
+                                    <th>${{ number_format($order->subtotal ?? 0, 2) }}</th>
+                                </tr>
+                                @if($order->delivery_fee > 0)
+                                <tr>
+                                    <th colspan="3" class="text-end">Delivery Fee:</th>
+                                    <th>${{ number_format($order->delivery_fee ?? 0, 2) }}</th>
+                                </tr>
+                                @endif
+                                @if(($order->discount ?? 0) > 0)
+                                <tr>
+                                    <th colspan="3" class="text-end">Discount:</th>
+                                    <th>-${{ number_format($order->discount ?? 0, 2) }}</th>
+                                </tr>
+                                @endif
+                                <tr class="table-primary">
                                     <th colspan="3" class="text-end">Total:</th>
-                                    <th>${{ number_format($order->total, 2) }}</th>
+                                    <th><strong>${{ number_format($order->total ?? 0, 2) }}</strong></th>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
+                    
+                    <!-- Address Information -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6>Pickup Address</h6>
+                            <p>{{ $order->pickupAddress->full_address ?? $order->pickup_address_id ?? 'N/A' }}</p>
+                            <small class="text-muted">Scheduled: {{ $order->pickup_scheduled_at ? $order->pickup_scheduled_at->format('F j, Y g:i A') : 'N/A' }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Delivery Address</h6>
+                            <p>{{ $order->deliveryAddress->full_address ?? $order->delivery_address_id ?? 'N/A' }}</p>
+                            <small class="text-muted">Scheduled: {{ $order->delivery_scheduled_at ? $order->delivery_scheduled_at->format('F j, Y g:i A') : 'N/A' }}</small>
+                        </div>
+                    </div>
+                    
+                    @if($order->special_instructions)
+                    <div class="mt-3">
+                        <h6>Special Instructions</h6>
+                        <p>{{ $order->special_instructions }}</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

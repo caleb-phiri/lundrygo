@@ -76,7 +76,7 @@ class LaundryService extends Model
         });
         
         static::updating(function ($service) {
-            if ($service->isDirty('name')) {
+            if ($service->isDirty('name') && !$service->isDirty('slug')) {
                 $service->slug = Str::slug($service->name);
             }
         });
@@ -84,11 +84,10 @@ class LaundryService extends Model
     
     /**
      * Get the category that owns the service
-     * FIXED: Using Category class instead of LaundryCategory
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'category_id', 'id');
+        return $this->belongsTo(Category::class, 'category_id');
     }
     
     /**
@@ -155,17 +154,15 @@ class LaundryService extends Model
      */
     public function getPriceForBasketSize($basketSizeId, float $quantity = 1): float
     {
-        // Check if service has specific pricing for this basket size
         $basketSize = BasketSize::find($basketSizeId);
         
         if ($basketSize) {
             $basePrice = $this->final_price;
             $multiplier = $basketSize->price_multiplier ?? 1;
             
-            return ($basePrice * $multiplier) * $quantity;
+            return round(($basePrice * $multiplier) * $quantity, 2);
         }
         
-        // Fall back to regular pricing
         return $this->getPriceForQuantity($quantity);
     }
     
@@ -177,17 +174,38 @@ class LaundryService extends Model
         // Check volume pricing tiers first
         $tier = $this->tiers()
             ->where('min_quantity', '<=', $quantity)
-            ->where(function ($q) use ($quantity) {
-                $q->whereNull('max_quantity')->orWhere('max_quantity', '>=', $quantity);
+            ->where(function ($query) use ($quantity) {
+                $query->whereNull('max_quantity')
+                      ->orWhere('max_quantity', '>=', $quantity);
             })
+            ->orderBy('min_quantity', 'desc')
             ->first();
 
         if ($tier) {
-            return $tier->price * $quantity;
+            return round($tier->price * $quantity, 2);
         }
 
         // Use regular pricing
-        return $this->final_price * $quantity;
+        return round($this->final_price * $quantity, 2);
+    }
+    
+    /**
+     * Check if service has discount
+     */
+    public function hasDiscount(): bool
+    {
+        return !is_null($this->discount_price) && $this->discount_price < $this->price;
+    }
+    
+    /**
+     * Get discount percentage
+     */
+    public function getDiscountPercentageAttribute(): ?int
+    {
+        if ($this->hasDiscount()) {
+            return round((($this->price - $this->discount_price) / $this->price) * 100);
+        }
+        return null;
     }
     
     /**
@@ -235,6 +253,31 @@ class LaundryService extends Model
      */
     public function scopeExpress($query, $hours = 24)
     {
-        return $query->where('estimated_hours', '<=', $hours);
+        return $query->where(function($q) use ($hours) {
+            $q->where('estimated_hours', '<=', $hours)
+              ->orWhere('max_estimated_hours', '<=', $hours);
+        });
+    }
+    
+    /**
+     * Scope for discounted services
+     */
+    public function scopeDiscounted($query)
+    {
+        return $query->whereNotNull('discount_price')
+                     ->whereColumn('discount_price', '<', 'price');
+    }
+    
+    /**
+     * Scope for services requiring specific treatments
+     */
+    public function scopeRequiresPressing($query)
+    {
+        return $query->where('requires_pressing', true);
+    }
+    
+    public function scopeRequiresDryCleaning($query)
+    {
+        return $query->where('requires_dry_cleaning', true);
     }
 }

@@ -1,704 +1,1827 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>LaundryPro | Place New Order</title>
-    <!-- Bootstrap 5 CSS + Icons + Fonts -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+@extends('layouts.app')
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #d4f1f9 0%, #b9e6f0 100%);
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
+@section('title', 'Place New Order')
 
-        .bubble-bg {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
+@push('styles')
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+<style>
+/* ================= CSS VARIABLES ================= */
+:root {
+    --primary-navy: #0F2B3D;
+    --primary-deep: #1A3A4F;
+    --accent-teal: #2C8C8C;
+    --accent-teal-light: #4FB3B3;
+    --accent-gold: #D4AF37;
+    --accent-soft-blue: #E8F4F8;
+    --accent-soft-green: #E8F5E9;
+    --bg-white: #FFFFFF;
+    --bg-light: #F8FAFC;
+    --text-dark: #1E293B;
+    --text-muted: #64748B;
+    --border-light: #E2E8F0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    --shadow-hover: 0 12px 28px rgba(44,140,140,0.15);
+}
 
-        .bubble {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(0,180,216,0.12) 100%);
-            animation: floatBubble 22s infinite alternate ease-in-out;
-        }
+* {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
-        .bubble-1 { width: 420px; height: 420px; top: -140px; left: -170px; animation-duration: 26s; }
-        .bubble-2 { width: 550px; height: 550px; bottom: -200px; right: -200px; animation-duration: 32s; animation-delay: -5s; }
-        .bubble-3 { width: 280px; height: 280px; top: 45%; left: 75%; animation-duration: 19s; animation-delay: -7s; }
-        .bubble-4 { width: 180px; height: 180px; bottom: 15%; left: 10%; animation-duration: 24s; animation-delay: -3s; }
+body {
+    background: linear-gradient(135deg, var(--bg-light) 0%, #F1F5F9 100%);
+    min-height: 100vh;
+}
 
-        @keyframes floatBubble {
-            0% { transform: translate(0, 0) scale(1); opacity: 0.5; }
-            100% { transform: translate(3%, 5%) scale(1.08); opacity: 0.85; }
-        }
+/* ================= 3D ANIMATED BASKET ICON STYLES ================= */
+.basket-3d {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 16px;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    perspective: 500px;
+}
 
-        .simple-header {
-            background: white;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            position: relative;
-            z-index: 10;
-        }
+.basket-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #00b4d8, #0284c7);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
+.service-card:hover .basket-container {
+    transform: translateY(-6px) rotateX(5deg);
+    animation: floatBasket 3s ease-in-out infinite;
+}
 
-        .user-avatar {
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(135deg, #00b4d8, #0284c7);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-        }
+@keyframes floatBasket {
+    0%, 100% { transform: translateY(-6px) rotateX(5deg); }
+    50% { transform: translateY(-10px) rotateX(8deg); }
+}
 
-        .dashboard-wrapper {
-            position: relative;
-            z-index: 5;
-            padding: 2rem;
-        }
+.basket-body-3d {
+    position: absolute;
+    width: 65px;
+    height: 50px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(145deg, #D4A574, #B8874A);
+    border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
 
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 0.8rem;
-            margin-bottom: 1.5rem;
-        }
+.basket-body-3d::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(139, 69, 19, 0.3) 8px, rgba(139, 69, 19, 0.3) 10px),
+                repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(139, 69, 19, 0.2) 8px, rgba(139, 69, 19, 0.2) 10px);
+    border-radius: inherit;
+}
 
-        .nav-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 0.8rem 0.5rem;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.2s;
-            border: 1px solid #e2e8f0;
-        }
+.basket-rim {
+    position: absolute;
+    width: 72px;
+    height: 7px;
+    bottom: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #C49A6C, #A67B4E);
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
 
-        .nav-card:hover {
-            transform: translateY(-2px);
-            border-color: #00b4d8;
-            box-shadow: 0 6px 16px rgba(0,180,216,0.1);
-        }
+.basket-handle {
+    position: absolute;
+    width: 45px;
+    height: 25px;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid #C49A6C;
+    border-radius: 30px 30px 20px 20px;
+    border-top: none;
+    background: transparent;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+}
 
-        .nav-card i {
-            font-size: 1.4rem;
-            color: #00b4d8;
-            margin-bottom: 0.3rem;
-            display: block;
-        }
+.clothes-3d {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 35px;
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    z-index: 2;
+}
 
-        .nav-card span {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #334155;
-        }
+.cloth-item {
+    position: relative;
+    width: 18px;
+    height: 24px;
+    background: linear-gradient(135deg, #FFFFFF, #F0F0F0);
+    border-radius: 4px 4px 6px 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform-origin: center bottom;
+    transition: all 0.3s ease;
+}
 
-        .nav-card.active {
-            background: linear-gradient(135deg, #00b4d8, #0284c7);
-            border-color: #00b4d8;
-        }
+.service-card:hover .cloth-item {
+    animation: foldCloth3d 2s ease infinite;
+}
 
-        .nav-card.active i, .nav-card.active span {
-            color: white;
-        }
+.cloth-item:nth-child(1) { animation-delay: 0s; background: linear-gradient(135deg, #FFFFFF, #F5F5F5); }
+.cloth-item:nth-child(2) { animation-delay: 0.2s; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+.cloth-item:nth-child(3) { animation-delay: 0.4s; background: linear-gradient(135deg, #E8EAF6, #C5CAE9); }
+.cloth-item:nth-child(4) { animation-delay: 0.6s; background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+.cloth-item:nth-child(5) { animation-delay: 0.8s; background: linear-gradient(135deg, #E0F2F1, #B2DFDB); }
 
-        .form-card {
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(2px);
-            border-radius: 2rem;
-            border: none;
-            box-shadow: 0 25px 50px -12px rgba(0, 100, 120, 0.3);
-            overflow: hidden;
-        }
+@keyframes foldCloth3d {
+    0%, 100% { transform: rotate(0deg) translateY(0px); }
+    25% { transform: rotate(-2deg) translateY(-2px); }
+    75% { transform: rotate(2deg) translateY(-2px); }
+}
 
-        .form-header {
-            background: linear-gradient(115deg, #00b4d8, #0284c7);
-            padding: 1.2rem 1.5rem;
-            color: white;
-        }
+.cloth-item::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 2px;
+    right: 2px;
+    height: 2px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 1px;
+}
 
-        .form-header h4 {
-            font-weight: 800;
-            margin: 0;
-            font-size: 1.2rem;
-        }
+.cloth-item::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 2px;
+    right: 2px;
+    height: 2px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 1px;
+}
 
-        .section-title {
-            font-weight: 800;
-            color: #02698b;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid rgba(0, 180, 216, 0.3);
-            display: inline-block;
-        }
+.steam-particle-3d {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+    filter: blur(1px);
+    opacity: 0;
+    pointer-events: none;
+}
 
-        .form-control-fresh, .form-select-fresh {
-            border-radius: 1.2rem;
-            border: 1.5px solid #d4f0f5;
-            padding: 0.7rem 1.2rem;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
+.service-card:hover .steam-particle-3d {
+    animation: steamRise3d 2s ease infinite;
+}
 
-        .form-control-fresh:focus, .form-select-fresh:focus {
-            border-color: #00b4d8;
-            box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.15);
-            outline: none;
-        }
+.steam-particle-3d:nth-child(1) { top: 15px; left: 30%; animation-delay: 0s; }
+.steam-particle-3d:nth-child(2) { top: 10px; left: 50%; animation-delay: 0.4s; width: 5px; height: 5px; }
+.steam-particle-3d:nth-child(3) { top: 18px; left: 70%; animation-delay: 0.8s; }
+.steam-particle-3d:nth-child(4) { top: 12px; left: 40%; animation-delay: 1.2s; width: 3px; height: 3px; }
+.steam-particle-3d:nth-child(5) { top: 20px; left: 60%; animation-delay: 1.6s; }
 
-        .service-item {
-            background: #f8fafc;
-            border-radius: 1.2rem;
-            padding: 1rem;
-            margin-bottom: 0.8rem;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-        }
+@keyframes steamRise3d {
+    0% { opacity: 0; transform: translateY(0px) scale(1); }
+    20% { opacity: 0.6; }
+    80% { opacity: 0.3; transform: translateY(-20px) scale(1.5); }
+    100% { opacity: 0; transform: translateY(-25px) scale(2); }
+}
 
-        .service-item:hover {
-            border-color: #00b4d8;
-            background: white;
-        }
+.sparkle-3d {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: radial-gradient(circle, var(--accent-gold), transparent);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+}
 
-        .summary-card {
-            background: #f8fafc;
-            border-radius: 1.2rem;
-            padding: 1rem;
-            border: 1px solid #e2e8f0;
-        }
+.service-card:hover .sparkle-3d {
+    animation: sparkle3d 1.5s ease infinite;
+}
 
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
+.sparkle-3d:nth-child(6) { top: 8px; right: 25%; animation-delay: 0.2s; }
+.sparkle-3d:nth-child(7) { top: 3px; left: 35%; animation-delay: 0.6s; width: 3px; height: 3px; }
+.sparkle-3d:nth-child(8) { top: 12px; right: 40%; animation-delay: 1s; }
+.sparkle-3d:nth-child(9) { top: 5px; left: 25%; animation-delay: 1.4s; width: 4px; height: 4px; }
 
-        .summary-row:last-child {
-            border-bottom: none;
-        }
+@keyframes sparkle3d {
+    0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+    50% { opacity: 0.8; transform: scale(1.2) rotate(180deg); }
+}
 
-        .summary-row.total {
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: #0284c7;
-            padding-top: 0.8rem;
-            margin-top: 0.3rem;
-            border-top: 2px solid #00b4d8;
-        }
+.basket-shadow {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 65px;
+    height: 10px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.15), transparent);
+    border-radius: 50%;
+    filter: blur(4px);
+    transition: all 0.3s ease;
+}
 
-        .btn-primary-fresh {
-            background: linear-gradient(105deg, #00b4d8, #0284c7);
-            border: none;
-            border-radius: 2rem;
-            padding: 0.75rem 1.5rem;
-            font-weight: 700;
-            transition: all 0.25s;
-            color: white;
-        }
+.service-card:hover .basket-shadow {
+    width: 75px;
+    height: 14px;
+    bottom: -12px;
+    opacity: 0.6;
+}
 
-        .btn-primary-fresh:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 180, 216, 0.4);
-        }
+/* ================= SIDEBAR STYLES ================= */
+.sidebar-card {
+    background: var(--bg-white);
+    border-radius: 20px;
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
 
-        .btn-outline-fresh {
-            border: 1.5px solid #00b4d8;
-            background: transparent;
-            color: #0284c7;
-            border-radius: 2rem;
-            padding: 0.7rem 1.2rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
+.sidebar-avatar {
+    background: linear-gradient(135deg, var(--accent-teal), var(--accent-gold));
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+}
 
-        .btn-outline-fresh:hover {
-            background: #00b4d8;
-            color: white;
-            transform: translateY(-1px);
-        }
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-weight: 500;
+}
 
-        .map-container {
-            height: 250px;
-            border-radius: 1.2rem;
-            overflow: hidden;
-            border: 2px solid #e2e8f0;
-        }
+.nav-item:hover {
+    background: var(--accent-soft-blue);
+    color: var(--accent-teal);
+    transform: translateX(4px);
+}
 
-        #locationMap {
-            height: 100%;
-            width: 100%;
-        }
+.nav-item.active {
+    background: linear-gradient(135deg, var(--accent-teal), var(--accent-teal-light));
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
 
-        .alert-fresh {
-            border-radius: 1rem;
-            background: #fff5f0;
-            border-left: 4px solid #f97316;
-            font-size: 0.85rem;
-            padding: 0.8rem 1rem;
-        }
+/* ================= HERO SECTION ================= */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-navy), var(--primary-deep));
+    border-radius: 24px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+}
 
-        .alert-success-fresh {
-            border-radius: 1rem;
-            background: #d1fae5;
-            border-left: 4px solid #10b981;
-            font-size: 0.85rem;
-            padding: 0.8rem 1rem;
-            color: #065f46;
-        }
+.hero-section::before {
+    content: '🧺';
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    font-size: 120px;
+    opacity: 0.08;
+    pointer-events: none;
+}
 
-        @media (max-width: 768px) {
-            .dashboard-wrapper { padding: 1rem; }
-            .nav-grid { grid-template-columns: repeat(3, 1fr); }
-        }
+.welcome-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+}
 
-        @media (max-width: 576px) {
-            .nav-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-    </style>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-</head>
-<body>
+.welcome-subtitle {
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 20px;
+}
 
-<div class="bubble-bg">
-    <div class="bubble bubble-1"></div>
-    <div class="bubble bubble-2"></div>
-    <div class="bubble bubble-3"></div>
-    <div class="bubble bubble-4"></div>
-</div>
+.stat-chip {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 10px 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
 
-<div class="simple-header">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <span class="logo"><i class="fas fa-soap me-1"></i> LaundryPro</span>
-                <span class="ms-2 text-muted" style="font-size: 0.75rem;">place new order</span>
+/* ================= SERVICE CONTAINERS ================= */
+.service-category {
+    background: var(--bg-white);
+    border-radius: 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-light);
+}
+
+.service-category.collapsed .category-content {
+    display: none;
+}
+
+.category-header {
+    padding: 20px 24px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--border-light);
+}
+
+.category-header h4 {
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+.toggle-icon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-category.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.category-content {
+    padding: 24px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= SERVICE CARDS GRID ================= */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.service-card {
+    background: var(--bg-white);
+    border: 2px solid var(--border-light);
+    border-radius: 24px;
+    padding: 24px 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    text-align: center;
+}
+
+.service-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent-teal);
+    box-shadow: var(--shadow-hover);
+}
+
+.service-card.selected {
+    border-color: var(--accent-teal);
+    background: linear-gradient(135deg, rgba(44,140,140,0.03), rgba(212,175,55,0.02));
+    box-shadow: 0 0 0 3px rgba(44,140,140,0.1);
+}
+
+.service-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.service-description {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    line-height: 1.4;
+    min-height: 40px;
+}
+
+.service-price {
+    margin-bottom: 16px;
+}
+
+.currency {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    vertical-align: top;
+}
+
+.amount {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent-teal);
+    line-height: 1;
+}
+
+.period {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.service-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.service-features li {
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.service-features li i {
+    color: var(--accent-teal);
+    font-size: 10px;
+}
+
+/* Badges */
+.badge-recommended {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: linear-gradient(135deg, var(--accent-gold), #F59E0B);
+    color: var(--primary-navy);
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+    z-index: 1;
+}
+
+.badge-value {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--accent-teal), var(--accent-teal-light));
+    color: white;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+    z-index: 1;
+}
+
+/* ================= MODAL STYLES ================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-container {
+    background: var(--bg-white);
+    border-radius: 32px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-overlay.active .modal-container {
+    transform: scale(1);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--primary-navy), var(--primary-deep));
+    padding: 24px;
+    color: white;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.modal-body {
+    padding: 32px;
+}
+
+.modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    gap: 12px;
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-white);
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.modal-btn-cancel {
+    background: var(--bg-light);
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+}
+
+.modal-btn-cancel:hover {
+    background: #e2e8f0;
+}
+
+.modal-btn-confirm {
+    background: linear-gradient(135deg, var(--accent-teal), var(--accent-teal-light));
+    border: none;
+    color: white;
+}
+
+.modal-btn-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(44,140,140,0.3);
+}
+
+/* Service Options Modal (Small) */
+.service-modal {
+    max-width: 500px;
+}
+
+.service-modal .modal-option {
+    background: var(--bg-light);
+    border: 2px solid var(--border-light);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.service-modal .modal-option:hover {
+    border-color: var(--accent-teal);
+    background: var(--accent-soft-blue);
+    transform: translateX(5px);
+}
+
+.service-modal .modal-option.selected {
+    border-color: var(--accent-teal);
+    background: linear-gradient(135deg, rgba(44,140,140,0.1), rgba(212,175,55,0.05));
+}
+
+.service-modal .modal-option-title {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.service-modal .modal-option-price {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent-teal);
+}
+
+.service-modal .modal-option-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Checkout Card */
+.checkout-card {
+    position: sticky;
+    top: 24px;
+    background: var(--bg-white);
+    border-radius: 24px;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.checkout-header {
+    background: linear-gradient(135deg, var(--primary-navy), var(--primary-deep));
+    padding: 20px 24px;
+    color: white;
+}
+
+.form-floating-label {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.form-floating-label input,
+.form-floating-label select,
+.form-floating-label textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-light);
+    border-radius: 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: var(--bg-white);
+    color: var(--text-dark);
+}
+
+.form-floating-label select {
+    cursor: pointer;
+}
+
+.form-floating-label label {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--bg-white);
+    padding: 0 6px;
+    color: var(--text-muted);
+    font-size: 14px;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.form-floating-label textarea ~ label {
+    top: 16px;
+    transform: none;
+}
+
+.form-floating-label input:focus,
+.form-floating-label select:focus,
+.form-floating-label textarea:focus {
+    outline: none;
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 0 3px rgba(44,140,140,0.1);
+}
+
+.form-floating-label input:focus ~ label,
+.form-floating-label select:focus ~ label,
+.form-floating-label textarea:focus ~ label,
+.form-floating-label input:not(:placeholder-shown) ~ label,
+.form-floating-label select:has(option:checked:not([value=""])) ~ label {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--accent-teal);
+}
+
+.price-summary {
+    background: var(--bg-light);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 20px 0;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.price-row.total {
+    font-size: 20px;
+    font-weight: 800;
+    border-top: 2px solid var(--border-light);
+    margin-top: 8px;
+    padding-top: 12px;
+    color: var(--accent-teal);
+}
+
+.selected-services-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.selected-service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+}
+
+.selected-service-item .remove-item {
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Order Summary Styles */
+.order-summary-items {
+    margin-bottom: 16px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+}
+
+.summary-total {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent-teal);
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top: 2px solid var(--border-light);
+}
+
+/* Payment Modal Buttons */
+.payment-options-modal {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.payment-btn-modal {
+    flex: 1;
+    padding: 14px;
+    border: 2px solid var(--border-light);
+    border-radius: 14px;
+    background: var(--bg-white);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.payment-btn-modal.active {
+    background: var(--accent-teal) !important;
+    border-color: var(--accent-teal) !important;
+    color: white !important;
+}
+
+.payment-btn-modal:hover:not(.active) {
+    border-color: var(--accent-teal) !important;
+    background: var(--accent-soft-blue) !important;
+}
+
+/* Confirmation Modal */
+.confirmation-details {
+    background: var(--bg-light);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.confirmation-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.confirmation-row:last-child {
+    border-bottom: none;
+}
+
+.confirmation-label {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.confirmation-value {
+    color: var(--text-muted);
+    text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .checkout-card {
+        position: relative;
+        top: 0;
+        margin-top: 24px;
+    }
+    
+    .basket-3d {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+@media (max-width: 768px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .amount {
+        font-size: 28px;
+    }
+    
+    .modal-container {
+        width: 95%;
+        margin: 16px;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .payment-options-modal {
+        flex-direction: column;
+    }
+}
+</style>
+@endpush
+
+@section('content')
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Sidebar Column -->
+        <div class="col-lg-3">
+            <div class="sidebar-card">
+                <div class="text-center p-4">
+                    <div class="sidebar-avatar mb-3">
+                        <i class="fas fa-user fa-2x text-white"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1">{{ auth()->user()->name }}</h6>
+                    <small class="text-muted">{{ auth()->user()->email }}</small>
+                    <hr class="my-3">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="border rounded-3 p-2">
+                                <small class="text-muted d-block">Active Orders</small>
+                                <strong class="fs-4" style="color: var(--accent-teal);">{{ $activeOrders ?? 0 }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded-3 p-2">
+                                <small class="text-muted d-block">Completed</small>
+                                <strong class="fs-4" style="color: var(--accent-gold);">{{ $completedOrders ?? 0 }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-muted d-none d-sm-inline" style="font-size: 0.85rem;">{{ auth()->user()->name ?? 'Customer' }}</span>
-                <div class="user-avatar">
-                    {{ substr(auth()->user()->name ?? 'C', 0, 1) }}
+            
+            <div class="mt-3">
+                <a href="{{ route('customer.dashboard') }}" class="nav-item">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="{{ route('customer.orders') }}" class="nav-item">
+                    <i class="fas fa-box"></i> My Orders
+                </a>
+                <a href="{{ route('customer.orders.create') }}" class="nav-item active">
+                    <i class="fas fa-plus-circle"></i> New Order
+                </a>
+                <a href="{{ route('customer.addresses') }}" class="nav-item">
+                    <i class="fas fa-map-pin"></i> Addresses
+                </a>
+                <a href="{{ route('customer.profile') }}" class="nav-item">
+                    <i class="fas fa-user-circle"></i> Profile
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content Column -->
+        <div class="col-lg-6">
+            <div class="hero-section">
+                <div class="welcome-text">
+                    Fresh laundry, <br>delivered 🧺
+                </div>
+                <div class="welcome-subtitle">
+                    Choose your services and we'll handle the rest
+                </div>
+                <div class="stat-chip">
+                    <i class="fas fa-star" style="color: var(--accent-gold);"></i>
+                    <span>98% customer satisfaction</span>
+                </div>
+            </div>
+            
+            <form method="POST" action="{{ route('customer.orders.store') }}" id="orderForm">
+                @csrf
+                
+                <!-- STANDARD SERVICES -->
+                <div class="service-category collapsed" id="category-standard">
+                    <div class="category-header" onclick="toggleCategory('standard')">
+                        <div>
+                            <h4><i class="fas fa-box-open" style="color: var(--accent-teal);"></i> Standard Services</h4>
+                            <div class="category-desc">Pay-as-you-go • No commitment • Perfect for occasional laundry</div>
+                        </div>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="category-content" id="standard-content">
+                        <div class="services-grid">
+                            @foreach($standardServices as $service)
+                            <div class="service-card" 
+                                 data-service-id="{{ $service->id }}" 
+                                 data-base-name="{{ $service->name }}" 
+                                 data-base-price-fold="{{ $service->price }}" 
+                                 data-base-price-iron="{{ $service->price + ($service->ironing_included ? 0 : 5) }}" 
+                                 data-unit="{{ $service->unit }}" 
+                                 data-basket-size="{{ $service->basket_size }}"
+                                 data-iron-included="{{ $service->ironing_included ? 'true' : 'false' }}">
+                                @if($service->is_popular)
+                                <div class="badge-recommended">⭐ MOST POPULAR</div>
+                                @endif
+                                <div class="basket-3d">
+                                    <div class="basket-container">
+                                        <div class="basket-handle"></div>
+                                        <div class="basket-rim"></div>
+                                        <div class="basket-body-3d"></div>
+                                        <div class="clothes-3d">
+                                            @for($i = 0; $i < min(5, ($service->basket_size / 3)); $i++)
+                                            <div class="cloth-item"></div>
+                                            @endfor
+                                        </div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="basket-shadow"></div>
+                                    </div>
+                                </div>
+                                <div class="service-name">{{ $service->name }}</div>
+                                <div class="service-description">{{ Str::limit($service->description ?? 'Professional laundry service with care and quality.', 50) }}</div>
+                                <div class="service-price">
+                                    <span class="currency">$</span>
+                                    <span class="amount">{{ number_format($service->price, 0) }}</span>
+                                    <span class="period">/{{ $service->unit }}</span>
+                                </div>
+                                <ul class="service-features">
+                                    <li><i class="fas fa-check-circle"></i> Up to {{ $service->basket_size }}kg</li>
+                                    <li><i class="fas fa-truck"></i> Free pickup & delivery</li>
+                                    <li><i class="fas fa-clock"></i> {{ $service->turnaround_hours }}hr turnaround</li>
+                                </ul>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- WEEKLY SUBSCRIPTIONS -->
+                <div class="service-category collapsed" id="category-weekly">
+                    <div class="category-header" onclick="toggleCategory('weekly')">
+                        <div>
+                            <h4><i class="fas fa-calendar-week" style="color: var(--accent-teal);"></i> Weekly Subscriptions</h4>
+                            <div class="category-desc">Save more • Auto-renew weekly • Cancel anytime</div>
+                        </div>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="category-content" id="weekly-content">
+                        <div class="services-grid">
+                            @foreach($weeklySubscriptions as $service)
+                            <div class="service-card" 
+                                 data-service-id="{{ $service->id }}" 
+                                 data-base-name="{{ $service->name }}" 
+                                 data-base-price-fold="{{ $service->price }}" 
+                                 data-base-price-iron="{{ $service->price + ($service->ironing_included ? 0 : 10) }}" 
+                                 data-unit="{{ $service->unit }}" 
+                                 data-baskets-per-week="{{ $service->baskets_per_week }}"
+                                 data-iron-included="{{ $service->ironing_included ? 'true' : 'false' }}">
+                                @if($service->is_popular)
+                                <div class="badge-recommended">⭐ MOST POPULAR</div>
+                                @endif
+                                @if($service->is_best_value)
+                                <div class="badge-value">✨ BEST VALUE</div>
+                                @endif
+                                <div class="basket-3d">
+                                    <div class="basket-container">
+                                        <div class="basket-handle"></div>
+                                        <div class="basket-rim"></div>
+                                        <div class="basket-body-3d"></div>
+                                        <div class="clothes-3d">
+                                            @for($i = 0; $i < min(4, $service->baskets_per_week + 1); $i++)
+                                            <div class="cloth-item"></div>
+                                            @endfor
+                                        </div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="basket-shadow"></div>
+                                    </div>
+                                </div>
+                                <div class="service-name">{{ $service->name }}</div>
+                                <div class="service-description">{{ Str::limit($service->description ?? 'Weekly subscription for regular laundry needs.', 50) }}</div>
+                                <div class="service-price">
+                                    <span class="currency">$</span>
+                                    <span class="amount">{{ number_format($service->price, 0) }}</span>
+                                    <span class="period">/{{ $service->unit }}</span>
+                                </div>
+                                <ul class="service-features">
+                                    <li><i class="fas fa-check-circle"></i> {{ $service->baskets_per_week }} basket(s) per week</li>
+                                    <li><i class="fas fa-truck"></i> Free pickup & delivery</li>
+                                    @if($service->ironing_included)
+                                    <li><i class="fas fa-iron"></i> Ironing included</li>
+                                    @endif
+                                </ul>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- MONTHLY SUBSCRIPTIONS -->
+                <div class="service-category collapsed" id="category-monthly">
+                    <div class="category-header" onclick="toggleCategory('monthly')">
+                        <div>
+                            <h4><i class="fas fa-calendar-alt" style="color: var(--accent-teal);"></i> Monthly Subscriptions</h4>
+                            <div class="category-desc">Best value • Save up to 20% • Perfect for consistent users</div>
+                        </div>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="category-content" id="monthly-content">
+                        <div class="services-grid">
+                            @foreach($monthlySubscriptions as $service)
+                            <div class="service-card" 
+                                 data-service-id="{{ $service->id }}" 
+                                 data-base-name="{{ $service->name }}" 
+                                 data-base-price-fold="{{ $service->price }}" 
+                                 data-base-price-iron="{{ $service->price + ($service->ironing_included ? 0 : 40) }}" 
+                                 data-unit="{{ $service->unit }}" 
+                                 data-baskets-per-month="{{ $service->baskets_per_month }}"
+                                 data-iron-included="{{ $service->ironing_included ? 'true' : 'false' }}"
+                                 data-bedding="{{ $service->bedding_cleaning ? 'true' : 'false' }}"
+                                 data-priority="{{ $service->priority_service ? 'true' : 'false' }}">
+                                @if($service->is_popular)
+                                <div class="badge-recommended">🏆 CORE SELLER</div>
+                                @endif
+                                @if($service->is_best_value)
+                                <div class="badge-value">💎 PREMIUM</div>
+                                @endif
+                                <div class="basket-3d">
+                                    <div class="basket-container">
+                                        <div class="basket-handle"></div>
+                                        <div class="basket-rim"></div>
+                                        <div class="basket-body-3d"></div>
+                                        <div class="clothes-3d">
+                                            @for($i = 0; $i < min(5, $service->baskets_per_month); $i++)
+                                            <div class="cloth-item"></div>
+                                            @endfor
+                                        </div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="basket-shadow"></div>
+                                    </div>
+                                </div>
+                                <div class="service-name">{{ $service->name }}</div>
+                                <div class="service-description">{{ Str::limit($service->description ?? 'Monthly subscription for regular laundry needs.', 50) }}</div>
+                                <div class="service-price">
+                                    <span class="currency">$</span>
+                                    <span class="amount">{{ number_format($service->price, 0) }}</span>
+                                    <span class="period">/{{ $service->unit }}</span>
+                                </div>
+                                <ul class="service-features">
+                                    <li><i class="fas fa-check-circle"></i> {{ $service->baskets_per_month }} baskets per month</li>
+                                    <li><i class="fas fa-truck"></i> Free pickup & delivery</li>
+                                    @if($service->bedding_cleaning)
+                                    <li><i class="fas fa-bed"></i> Blanket cleaning included</li>
+                                    @endif
+                                    @if($service->priority_service)
+                                    <li><i class="fas fa-bolt"></i> Priority service</li>
+                                    @endif
+                                </ul>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- EXPRESS SERVICES -->
+                <div class="service-category collapsed" id="category-express">
+                    <div class="category-header" onclick="toggleCategory('express')">
+                        <div>
+                            <h4><i class="fas fa-bolt" style="color: var(--accent-gold);"></i> Express Services</h4>
+                            <div class="category-desc">Fast 12-24 hour turnaround • Priority processing</div>
+                        </div>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="category-content" id="express-content">
+                        <div class="services-grid">
+                            @foreach($expressServices as $service)
+                            <div class="service-card" 
+                                 data-service-id="{{ $service->id }}" 
+                                 data-base-name="{{ $service->name }}" 
+                                 data-base-price-fold="{{ $service->price }}" 
+                                 data-base-price-iron="{{ $service->price + 6 }}" 
+                                 data-unit="{{ $service->unit }}" 
+                                 data-basket-size="{{ $service->basket_size }}"
+                                 data-priority="true">
+                                <div class="badge-value">⚡ EXPRESS</div>
+                                <div class="basket-3d">
+                                    <div class="basket-container">
+                                        <div class="basket-handle"></div>
+                                        <div class="basket-rim"></div>
+                                        <div class="basket-body-3d"></div>
+                                        <div class="clothes-3d">
+                                            @for($i = 0; $i < min(4, ($service->basket_size / 3)); $i++)
+                                            <div class="cloth-item"></div>
+                                            @endfor
+                                        </div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="steam-particle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="sparkle-3d"></div>
+                                        <div class="basket-shadow"></div>
+                                    </div>
+                                </div>
+                                <div class="service-name">{{ $service->name }}</div>
+                                <div class="service-description">{{ Str::limit($service->description ?? 'Fast turnaround for urgent laundry needs.', 50) }}</div>
+                                <div class="service-price">
+                                    <span class="currency">$</span>
+                                    <span class="amount">{{ number_format($service->price, 0) }}</span>
+                                    <span class="period">/{{ $service->unit }}</span>
+                                </div>
+                                <ul class="service-features">
+                                    <li><i class="fas fa-clock"></i> {{ $service->turnaround_hours }}-24 hour turnaround</li>
+                                    <li><i class="fas fa-bolt"></i> Priority processing</li>
+                                    <li><i class="fas fa-truck"></i> Express delivery</li>
+                                </ul>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Checkout Column -->
+        <div class="col-lg-3">
+            <div class="checkout-card">
+                <div class="checkout-header">
+                    <h6 class="mb-0"><i class="fas fa-shopping-bag me-2"></i> Your Order</h6>
+                    <small>Review your selection</small>
+                </div>
+                <div class="p-4">
+                    <div class="selected-services-list" id="selectedServicesList">
+                        <p class="text-muted text-center">No services selected yet</p>
+                    </div>
+                    
+                    <div class="price-summary">
+                        <div class="price-row">
+                            <span>Subtotal:</span>
+                            <span>$<span id="subtotal">0.00</span></span>
+                        </div>
+                        <div class="price-row">
+                            <span>Delivery Fee:</span>
+                            <span>$<span id="delivery_fee">5.00</span></span>
+                        </div>
+                        <div class="price-row total">
+                            <span>Total:</span>
+                            <span>$<span id="total">0.00</span></span>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="submit-btn" onclick="openCheckoutModal()">
+                        Proceed to Checkout <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="dashboard-wrapper">
-    <div class="container">
-        <div class="nav-grid">
-            <a href="{{ route('customer.dashboard') }}" class="nav-card">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ route('customer.orders') }}" class="nav-card">
-                <i class="fas fa-box"></i>
-                <span>My Orders</span>
-            </a>
-            <a href="{{ route('customer.orders.create') }}" class="nav-card active">
-                <i class="fas fa-plus-circle"></i>
-                <span>New Order</span>
-            </a>
-            <a href="{{ route('customer.addresses') }}" class="nav-card">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>Addresses</span>
-            </a>
-            <a href="{{ route('customer.profile') }}" class="nav-card">
-                <i class="fas fa-user"></i>
-                <span>Profile</span>
-            </a>
-            <a href="{{ route('customer.reviews') }}" class="nav-card">
-                <i class="fas fa-star"></i>
-                <span>Reviews</span>
-            </a>
+<!-- Step 1: Service Options Modal -->
+<div class="modal-overlay" id="serviceModal">
+    <div class="modal-container service-modal">
+        <div class="modal-header">
+            <h3 id="modalTitle">Select Service Option</h3>
+            <p style="margin: 8px 0 0; opacity: 0.8;">Choose how you want your laundry processed</p>
         </div>
-
-        <div class="form-card">
-            <div class="form-header">
-                <h4><i class="fas fa-water me-2"></i> Place New Laundry Order</h4>
+        <div class="modal-body">
+            <div class="modal-option" id="optionWashFold" onclick="selectModalOption('wash_fold')">
+                <div>
+                    <div class="modal-option-title">🧼 Wash & Fold</div>
+                    <div class="modal-option-desc">Professional washing, careful folding, fresh scent</div>
+                </div>
+                <div class="modal-option-price" id="priceFold">$0.00</div>
             </div>
-            <div class="card-body p-4 p-md-5">
-                
-                @if($errors->any())
-                    <div class="alert alert-fresh mb-4">
-                        <i class="fas fa-circle-exclamation me-2"></i> Please fix the following:
-                        <ul class="mb-0 mt-2">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('customer.orders.store') }}" id="orderForm">
-                    @csrf
-                    
-                    <div class="mb-4">
-                        <h5 class="section-title"><i class="fas fa-truck-pickup me-2"></i> Pickup Address</h5>
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <select name="pickup_address_id" id="pickup_address" class="form-select form-select-fresh @error('pickup_address_id') is-invalid @enderror" required>
-                                    <option value="">Select Pickup Address</option>
-                                    @foreach($addresses as $address)
-                                        <option value="{{ $address->id }}" {{ $address->is_default ? 'selected' : '' }} data-lat="{{ $address->latitude ?? '-15.3875' }}" data-lng="{{ $address->longitude ?? '28.3228' }}">
-                                            {{ $address->label }} - {{ $address->full_address ?? $address->address }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('pickup_address_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <a href="{{ route('customer.addresses') }}" class="btn btn-outline-fresh w-100">
-                                    <i class="fas fa-plus me-1"></i> New Address
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5 class="section-title"><i class="fas fa-home me-2"></i> Delivery Address</h5>
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <select name="delivery_address_id" id="delivery_address" class="form-select form-select-fresh @error('delivery_address_id') is-invalid @enderror" required>
-                                    <option value="">Select Delivery Address</option>
-                                    @foreach($addresses as $address)
-                                        <option value="{{ $address->id }}" data-lat="{{ $address->latitude ?? '-15.3875' }}" data-lng="{{ $address->longitude ?? '28.3228' }}">
-                                            {{ $address->label }} - {{ $address->full_address ?? $address->address }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('delivery_address_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <a href="{{ route('customer.addresses') }}" class="btn btn-outline-fresh w-100">
-                                    <i class="fas fa-plus me-1"></i> New Address
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5 class="section-title"><i class="fas fa-map-marked-alt me-2"></i> Location Preview</h5>
-                        <div class="map-container">
-                            <div id="locationMap"></div>
-                        </div>
-                        <input type="hidden" name="pickup_latitude" id="pickup_latitude" value="">
-                        <input type="hidden" name="pickup_longitude" id="pickup_longitude" value="">
-                        <p class="text-muted small mt-2"><i class="fas fa-info-circle me-1"></i> Interactive map showing selected address location</p>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5 class="section-title"><i class="fas fa-tshirt me-2"></i> Select Services</h5>
-                        <div id="services-container">
-                            <div class="service-item">
-                                <div class="row g-3 align-items-end">
-                                    <div class="col-md-5">
-                                        <label class="form-label small fw-bold text-muted">Service Type</label>
-                                        <select name="items[0][service_id]" class="form-select form-select-fresh service-select" required>
-                                            <option value="">Select Service</option>
-                                            @foreach($services->groupBy('category.name') as $category => $categoryServices)
-                                                <optgroup label="{{ $category }}">
-                                                    @foreach($categoryServices as $service)
-                                                        <option value="{{ $service->id }}" data-price="{{ $service->price }}" data-unit="{{ $service->unit }}">
-                                                            {{ $service->name }} - ${{ number_format($service->price, 2) }}/{{ $service->unit }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label small fw-bold text-muted">Quantity</label>
-                                        <input type="number" name="items[0][quantity]" class="form-control form-control-fresh quantity-input" placeholder="Qty" min="1" value="1" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label small fw-bold text-muted">Item Total</label>
-                                        <input type="text" class="form-control form-control-fresh item-total" readonly placeholder="$0.00" style="background-color: #e9ecef;">
-                                    </div>
-                                    <div class="col-md-1 text-center">
-                                        <button type="button" class="btn btn-danger remove-service" style="display: none; border-radius: 50%; width: 38px;">&times;</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" id="add-service" class="btn btn-outline-fresh btn-sm mt-3"><i class="fas fa-plus me-1"></i> Add Another Service</button>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <h5 class="section-title"><i class="fas fa-calendar-alt me-2"></i> Pickup Date & Time</h5>
-                            <input type="datetime-local" name="pickup_date" class="form-control form-control-fresh @error('pickup_date') is-invalid @enderror" id="pickup_date" required>
-                            @error('pickup_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="col-md-6">
-                            <h5 class="section-title"><i class="fas fa-calendar-check me-2"></i> Delivery Date & Time</h5>
-                            <input type="datetime-local" name="delivery_date" class="form-control form-control-fresh @error('delivery_date') is-invalid @enderror" id="delivery_date" required>
-                            @error('delivery_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5 class="section-title"><i class="fas fa-pen-alt me-2"></i> Special Instructions</h5>
-                        <textarea name="special_instructions" class="form-control form-control-fresh" rows="3" placeholder="Any special requests? e.g., fragile items, no starch, eco-friendly detergent, etc.">{{ old('special_instructions') }}</textarea>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <h5 class="section-title"><i class="fas fa-tag me-2"></i> Promotion Code</h5>
-                            <input type="text" name="promotion_code" id="promo_code" class="form-control form-control-fresh" placeholder="Enter promo code" value="{{ old('promotion_code') }}">
-                        </div>
-                        <div class="col-md-6 d-flex align-items-end">
-                            <button type="button" id="apply-promo" class="btn btn-outline-fresh w-100"><i class="fas fa-gift me-1"></i> Apply Code</button>
-                        </div>
-                        <div id="promo-message" class="mt-2"></div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5 class="section-title"><i class="fas fa-receipt me-2"></i> Order Summary</h5>
-                        <div class="summary-card">
-                            <div class="summary-row"><span>Subtotal:</span><span class="fw-bold">$<span id="subtotal">0.00</span></span></div>
-                            <div class="summary-row"><span>Delivery Fee:</span><span>$<span id="delivery-fee">5.00</span></span></div>
-                            <div class="summary-row"><span>Discount:</span><span class="text-danger">-$<span id="discount">0.00</span></span></div>
-                            <div class="summary-row total"><span>Total:</span><span class="fs-5">$<span id="total">0.00</span></span></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5 class="section-title"><i class="fas fa-credit-card me-2"></i> Payment Method</h5>
-                        <div class="row g-3">
-                            <div class="col-md-4"><div class="form-check"><input type="radio" name="payment_method" value="card" class="form-check-input" id="payment-card" checked><label class="form-check-label" for="payment-card"><i class="fas fa-credit-card me-1 text-primary"></i> Credit/Debit Card</label></div></div>
-                            <div class="col-md-4"><div class="form-check"><input type="radio" name="payment_method" value="cash" class="form-check-input" id="payment-cash"><label class="form-check-label" for="payment-cash"><i class="fas fa-money-bill me-1 text-success"></i> Cash on Delivery</label></div></div>
-                            <div class="col-md-4"><div class="form-check"><input type="radio" name="payment_method" value="wallet" class="form-check-input" id="payment-wallet"><label class="form-check-label" for="payment-wallet"><i class="fas fa-wallet me-1 text-info"></i> Wallet Balance</label></div></div>
-                        </div>
-                        @error('payment_method')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-
-                    <div class="d-flex gap-3 justify-content-end mt-4">
-                        <a href="{{ route('customer.dashboard') }}" class="btn btn-outline-fresh px-4"><i class="fas fa-times me-2"></i> Cancel</a>
-                        <button type="submit" class="btn btn-primary-fresh px-5" id="submitBtn"><i class="fas fa-check-circle me-2"></i> Place Order</button>
-                    </div>
-                </form>
+            <div class="modal-option" id="optionWashIron" onclick="selectModalOption('wash_iron')">
+                <div>
+                    <div class="modal-option-title">👔 Wash + Iron</div>
+                    <div class="modal-option-desc">Complete care with professional ironing & pressing</div>
+                </div>
+                <div class="modal-option-price" id="priceIron">$0.00</div>
             </div>
+        </div>
+        <div class="modal-footer">
+            <div class="modal-btn modal-btn-cancel" onclick="closeServiceModal()">Cancel</div>
+            <div class="modal-btn modal-btn-confirm" onclick="confirmAddToCart()">Add to Cart</div>
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Step 2: Pickup & Delivery + Payment Modal -->
+<div class="modal-overlay" id="checkoutModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-truck me-2"></i> Pickup & Delivery Details</h3>
+            <p style="margin: 8px 0 0; opacity: 0.8;">Step 2 of 3: Tell us when and where to pick up your laundry</p>
+        </div>
+        <div class="modal-body">
+            <!-- Pickup & Delivery Section -->
+            <div class="service-category" style="margin-bottom: 24px; box-shadow: none; border: 1px solid var(--border-light);">
+                <div class="category-header" style="background: var(--accent-soft-blue); border-radius: 20px 20px 0 0;">
+                    <div>
+                        <h4><i class="fas fa-truck" style="color: var(--accent-teal);"></i> Pickup & Delivery</h4>
+                        <div class="category-desc">Schedule your pickup and delivery times</div>
+                    </div>
+                </div>
+                <div class="category-content" style="padding: 20px;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating-label">
+                                <select class="form-control" required id="modalPickupAddress">
+                                    <option value="">Select Pickup Address</option>
+                                    @foreach($addresses as $address)
+                                        <option value="{{ $address->id }}" {{ $address->is_default ? 'selected' : '' }}>
+                                            {{ $address->label }} - {{ $address->full_address }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <label>Pickup Address</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating-label">
+                                <select class="form-control" required id="modalDeliveryAddress">
+                                    <option value="">Select Delivery Address</option>
+                                    @foreach($addresses as $address)
+                                        <option value="{{ $address->id }}">
+                                            {{ $address->label }} - {{ $address->full_address }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <label>Delivery Address</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating-label">
+                                <input type="datetime-local" class="form-control" required id="modalPickupDate" placeholder=" ">
+                                <label>Pickup Date & Time</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating-label">
+                                <input type="datetime-local" class="form-control" required id="modalDeliveryDate" placeholder=" ">
+                                <label>Delivery Date & Time</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Method Section -->
+            <div class="service-category" style="margin-bottom: 24px; box-shadow: none; border: 1px solid var(--border-light);">
+                <div class="category-header" style="background: var(--accent-soft-blue); border-radius: 20px 20px 0 0;">
+                    <div>
+                        <h4><i class="fas fa-credit-card" style="color: var(--accent-teal);"></i> Payment Method</h4>
+                        <div class="category-desc">Select how you want to pay</div>
+                    </div>
+                </div>
+                <div class="category-content" style="padding: 20px;">
+                    <div class="payment-options-modal">
+                        <button type="button" class="payment-btn-modal active" data-payment="card" onclick="selectPaymentMethodModal('card', this)">
+                            💳 Credit/Debit Card
+                        </button>
+                        <button type="button" class="payment-btn-modal" data-payment="cash" onclick="selectPaymentMethodModal('cash', this)">
+                            💵 Cash on Delivery
+                        </button>
+                        <button type="button" class="payment-btn-modal" data-payment="wallet" onclick="selectPaymentMethodModal('wallet', this)">
+                            👛 Wallet Balance
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Special Instructions Section -->
+            <div class="service-category" style="margin-bottom: 0; box-shadow: none; border: 1px solid var(--border-light);">
+                <div class="category-header" style="background: var(--accent-soft-blue); border-radius: 20px 20px 0 0;">
+                    <div>
+                        <h4><i class="fas fa-clipboard-list" style="color: var(--accent-teal);"></i> Special Instructions</h4>
+                        <div class="category-desc">Let us know any special requirements (optional)</div>
+                    </div>
+                </div>
+                <div class="category-content" style="padding: 20px;">
+                    <div class="form-floating-label">
+                        <textarea class="form-control" rows="3" placeholder=" " id="modalSpecialInstructions"></textarea>
+                        <label>Special Instructions (optional)</label>
+                    </div>
+                    <div class="form-floating-label mt-3">
+                        <input type="text" class="form-control" placeholder=" " id="modalPromotionCode">
+                        <label>Promotion Code (optional)</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class="modal-btn modal-btn-cancel" onclick="closeCheckoutModal()">Back to Cart</div>
+            <div class="modal-btn modal-btn-confirm" onclick="showOrderSummary()">Review Order →</div>
+        </div>
+    </div>
+</div>
+
+<!-- Step 3: Order Summary & Confirmation Modal -->
+<div class="modal-overlay" id="summaryModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-clipboard-list me-2"></i> Order Summary</h3>
+            <p style="margin: 8px 0 0; opacity: 0.8;">Step 3 of 3: Please review your order before placing</p>
+        </div>
+        <div class="modal-body">
+            <div class="confirmation-details">
+                <h5 style="margin-bottom: 16px; color: var(--accent-teal);">📋 Selected Services</h5>
+                <div id="summaryServicesList"></div>
+                
+                <h5 style="margin: 20px 0 16px; color: var(--accent-teal);">📍 Pickup & Delivery</h5>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Pickup Address:</span>
+                    <span class="confirmation-value" id="summaryPickupAddress"></span>
+                </div>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Delivery Address:</span>
+                    <span class="confirmation-value" id="summaryDeliveryAddress"></span>
+                </div>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Pickup Date:</span>
+                    <span class="confirmation-value" id="summaryPickupDate"></span>
+                </div>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Delivery Date:</span>
+                    <span class="confirmation-value" id="summaryDeliveryDate"></span>
+                </div>
+                
+                <h5 style="margin: 20px 0 16px; color: var(--accent-teal);">💳 Payment Method</h5>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Payment Method:</span>
+                    <span class="confirmation-value" id="summaryPaymentMethod"></span>
+                </div>
+                
+                <h5 style="margin: 20px 0 16px; color: var(--accent-teal);">💰 Price Breakdown</h5>
+                <div id="summaryPriceBreakdown"></div>
+                
+                <div class="summary-total" id="summaryTotal">
+                    Total: $0.00
+                </div>
+                
+                <div class="form-floating-label mt-3">
+                    <textarea class="form-control" rows="2" placeholder=" " id="modalSpecialInstructions"></textarea>
+                    <label>Special Instructions (optional)</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class="modal-btn modal-btn-cancel" onclick="closeSummaryModal()">Back to Edit</div>
+            <div class="modal-btn modal-btn-confirm" onclick="submitOrder()">Confirm & Place Order ✓</div>
+        </div>
+    </div>
+</div>
 
 <script>
-    let serviceIndex = {{ isset($serviceIndex) ? $serviceIndex : 1 }};
-    let currentDiscount = 0;
-    const deliveryFee = 5.00;
-    let map;
-    let pickupMarker;
+// Selected services storage
+let selectedServices = [];
+let pendingService = null;
+let selectedOption = null;
+let selectedPaymentMethod = 'card';
 
-    function initMap() {
-        const defaultLat = -15.3875;
-        const defaultLng = 28.3228;
-        map = L.map('locationMap').setView([defaultLat, defaultLng], 12);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            subdomains: 'abcd',
-            maxZoom: 19
-        }).addTo(map);
-        pickupMarker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map).bindPopup('Pickup Location').openPopup();
-        pickupMarker.on('dragend', function(e) {
-            const pos = pickupMarker.getLatLng();
-            $('#pickup_latitude').val(pos.lat);
-            $('#pickup_longitude').val(pos.lng);
-        });
-        map.on('click', function(e) {
-            pickupMarker.setLatLng(e.latlng);
-            $('#pickup_latitude').val(e.latlng.lat);
-            $('#pickup_longitude').val(e.latlng.lng);
+// Store pickup/delivery data for summary
+let pickupAddressText = '';
+let deliveryAddressText = '';
+let pickupDateValue = '';
+let deliveryDateValue = '';
+
+// Toggle categories
+function toggleCategory(category) {
+    const content = document.getElementById(`${category}-content`);
+    const container = content.closest('.service-category');
+    container.classList.toggle('collapsed');
+}
+
+// Open service modal
+function openServiceModal(serviceCard) {
+    const serviceId = serviceCard.dataset.serviceId;
+    const baseName = serviceCard.dataset.baseName;
+    const priceFold = parseFloat(serviceCard.dataset.basePriceFold);
+    const priceIron = parseFloat(serviceCard.dataset.basePriceIron);
+    const unit = serviceCard.dataset.unit;
+    const ironIncluded = serviceCard.dataset.ironIncluded === 'true';
+    
+    pendingService = {
+        id: serviceId,
+        name: baseName,
+        priceFold: priceFold,
+        priceIron: priceIron,
+        unit: unit,
+        ironIncluded: ironIncluded,
+        card: serviceCard,
+        basketsPerWeek: serviceCard.dataset.basketsPerWeek,
+        basketsPerMonth: serviceCard.dataset.basketsPerMonth,
+        freeIroning: serviceCard.dataset.freeIroning === 'true',
+        bedding: serviceCard.dataset.bedding === 'true',
+        priority: serviceCard.dataset.priority === 'true'
+    };
+    
+    document.getElementById('modalTitle').innerText = baseName;
+    document.getElementById('priceFold').innerText = `$${priceFold.toFixed(2)}/${unit}`;
+    document.getElementById('priceIron').innerText = `$${priceIron.toFixed(2)}/${unit}`;
+    
+    selectedOption = null;
+    document.getElementById('optionWashFold').classList.remove('selected');
+    document.getElementById('optionWashIron').classList.remove('selected');
+    
+    if (ironIncluded) {
+        document.getElementById('optionWashFold').style.display = 'none';
+        document.getElementById('optionWashIron').style.display = 'flex';
+        selectedOption = 'wash_iron';
+        document.getElementById('optionWashIron').classList.add('selected');
+    } else {
+        document.getElementById('optionWashFold').style.display = 'flex';
+        document.getElementById('optionWashIron').style.display = 'flex';
+    }
+    
+    document.getElementById('serviceModal').classList.add('active');
+}
+
+function selectModalOption(option) {
+    selectedOption = option;
+    document.getElementById('optionWashFold').classList.remove('selected');
+    document.getElementById('optionWashIron').classList.remove('selected');
+    document.getElementById(`option${option === 'wash_fold' ? 'WashFold' : 'WashIron'}`).classList.add('selected');
+}
+
+function closeServiceModal() {
+    document.getElementById('serviceModal').classList.remove('active');
+    pendingService = null;
+    selectedOption = null;
+}
+
+function confirmAddToCart() {
+    if (!selectedOption && !pendingService?.ironIncluded) {
+        alert('Please select an option');
+        return;
+    }
+    
+    if (!pendingService) return;
+    
+    const serviceId = pendingService.id;
+    const existingIndex = selectedServices.findIndex(s => s.id === serviceId);
+    
+    const isIron = pendingService.ironIncluded ? true : (selectedOption === 'wash_iron');
+    const price = isIron ? pendingService.priceIron : pendingService.priceFold;
+    const serviceType = isIron ? 'Wash + Iron' : 'Wash & Fold';
+    const fullName = `${pendingService.name} - ${serviceType}`;
+    const quantity = 1;
+    
+    if (existingIndex !== -1) {
+        selectedServices[existingIndex] = {
+            id: serviceId,
+            name: fullName,
+            price: price,
+            unit: pendingService.unit,
+            quantity: quantity,
+            serviceType: serviceType,
+            basketsPerWeek: pendingService.basketsPerWeek,
+            basketsPerMonth: pendingService.basketsPerMonth,
+            freeIroning: pendingService.freeIroning,
+            bedding: pendingService.bedding,
+            priority: pendingService.priority
+        };
+    } else {
+        selectedServices.push({
+            id: serviceId,
+            name: fullName,
+            price: price,
+            unit: pendingService.unit,
+            quantity: quantity,
+            serviceType: serviceType,
+            basketsPerWeek: pendingService.basketsPerWeek,
+            basketsPerMonth: pendingService.basketsPerMonth,
+            freeIroning: pendingService.freeIroning,
+            bedding: pendingService.bedding,
+            priority: pendingService.priority
         });
     }
-
-    function updateMapFromAddress(selectElement) {
-        const selected = selectElement.find('option:selected');
-        const lat = selected.data('lat');
-        const lng = selected.data('lng');
-        if (lat && lng && map) {
-            map.setView([lat, lng], 14);
-            pickupMarker.setLatLng([lat, lng]);
-            $('#pickup_latitude').val(lat);
-            $('#pickup_longitude').val(lng);
-        }
-    }
-
-    function calculateTotals() {
-        let subtotal = 0;
-        $('.service-item').each(function() {
-            const price = parseFloat($(this).find('.service-select option:selected').data('price') || 0);
-            const quantity = parseInt($(this).find('.quantity-input').val() || 0);
-            const total = price * quantity;
-            $(this).find('.item-total').val('$' + total.toFixed(2));
-            subtotal += total;
-        });
-        $('#subtotal').text(subtotal.toFixed(2));
-        let total = subtotal + deliveryFee - currentDiscount;
-        if (total < 0) total = 0;
-        $('#total').text(total.toFixed(2));
-    }
-
-    $(document).ready(function() {
-        initMap();
-        calculateTotals();
-
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        const minDateTime = now.toISOString().slice(0, 16);
-        $('#pickup_date').attr('min', minDateTime);
-        
-        const deliveryMin = new Date();
-        deliveryMin.setDate(deliveryMin.getDate() + 2);
-        deliveryMin.setMinutes(deliveryMin.getMinutes() - deliveryMin.getTimezoneOffset());
-        $('#delivery_date').attr('min', deliveryMin.toISOString().slice(0, 16));
-
-        if ('{{ old("pickup_date") }}') $('#pickup_date').val('{{ old("pickup_date") }}');
-        if ('{{ old("delivery_date") }}') $('#delivery_date').val('{{ old("delivery_date") }}');
-
-        $('#pickup_address').change(function() { updateMapFromAddress($(this)); });
-        if ($('#pickup_address').val()) updateMapFromAddress($('#pickup_address'));
-
-        $('#add-service').click(function() {
-            const newItem = $('.service-item:first').clone();
-            newItem.find('.service-select').val('');
-            newItem.find('.quantity-input').val(1);
-            newItem.find('.item-total').val('');
-            newItem.find('.remove-service').show();
-            newItem.find('select, input').each(function() {
-                const name = $(this).attr('name');
-                if (name) $(this).attr('name', name.replace(/\[\d+\]/, '[' + serviceIndex + ']'));
-            });
-            $('#services-container').append(newItem);
-            serviceIndex++;
-            calculateTotals();
-        });
-
-        $(document).on('click', '.remove-service', function() {
-            if ($('.service-item').length > 1) {
-                $(this).closest('.service-item').fadeOut(200, function() { $(this).remove(); calculateTotals(); });
-            } else { alert('At least one service is required'); }
-        });
-
-        $(document).on('change', '.service-select, .quantity-input', function() { calculateTotals(); });
-
-        // Promotion validation using simple AJAX to same endpoint
-        $('#apply-promo').click(function() {
-            const code = $('#promo_code').val();
-            const subtotal = parseFloat($('#subtotal').text());
-            
-            if (!code) {
-                $('#promo-message').html('<div class="alert alert-info mt-2"><i class="fas fa-info-circle"></i> Enter a promotion code to save!</div>');
-                setTimeout(() => $('#promo-message .alert').fadeOut(500), 3000);
-                return;
-            }
-            
-            // Send AJAX request to validate promotion via the same form action endpoint with a different approach
-            $.ajax({
-                url: '{{ route("customer.orders.store") }}?validate_promo=true',
-                method: 'POST',
-                data: {
-                    promotion_code: code,
-                    subtotal: subtotal,
-                    _token: '{{ csrf_token() }}',
-                    _validate_only: true
-                },
-                success: function(response) {
-                    if (response.success) {
-                        currentDiscount = response.discount;
-                        $('#discount').text(currentDiscount.toFixed(2));
-                        $('#promo-message').html('<div class="alert alert-success-fresh mt-2"><i class="fas fa-check-circle"></i> ' + response.message + '</div>');
-                        calculateTotals();
-                    } else {
-                        currentDiscount = 0;
-                        $('#discount').text('0.00');
-                        $('#promo-message').html('<div class="alert alert-fresh mt-2"><i class="fas fa-exclamation-triangle"></i> ' + response.message + '</div>');
-                        calculateTotals();
-                    }
-                },
-                error: function(xhr) {
-                    // Fallback client-side validation for demo
-                    const promoCode = code.toUpperCase();
-                    if (promoCode === 'WELCOME10') {
-                        currentDiscount = subtotal * 0.10;
-                        $('#discount').text(currentDiscount.toFixed(2));
-                        $('#promo-message').html('<div class="alert alert-success-fresh mt-2"><i class="fas fa-check-circle"></i> 🎉 Promo code applied! 10% discount.</div>');
-                    } else if (promoCode === 'SAVE20') {
-                        currentDiscount = subtotal * 0.20;
-                        $('#discount').text(currentDiscount.toFixed(2));
-                        $('#promo-message').html('<div class="alert alert-success-fresh mt-2"><i class="fas fa-check-circle"></i> 🎉 Promo code applied! 20% discount.</div>');
-                    } else if (promoCode === 'FREEDELIVERY') {
-                        currentDiscount = deliveryFee;
-                        $('#discount').text(currentDiscount.toFixed(2));
-                        $('#promo-message').html('<div class="alert alert-success-fresh mt-2"><i class="fas fa-truck-fast"></i> 🚚 Free delivery applied!</div>');
-                    } else {
-                        currentDiscount = 0;
-                        $('#discount').text('0.00');
-                        $('#promo-message').html('<div class="alert alert-fresh mt-2"><i class="fas fa-exclamation-triangle"></i> Invalid promotion code. Try WELCOME10, SAVE20, or FREEDELIVERY</div>');
-                    }
-                    calculateTotals();
-                }
-            });
-            
-            setTimeout(() => { $('#promo-message .alert').fadeOut(500, function() { $(this).remove(); }); }, 4000);
-        });
-
-        $('#pickup_date').change(function() {
-            const pickupDate = $(this).val();
-            if (pickupDate) $('#delivery_date').attr('min', pickupDate);
-        });
-
-        const formCard = document.querySelector('.form-card');
-        if (formCard) {
-            formCard.style.opacity = '0';
-            formCard.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                formCard.style.transition = 'all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-                formCard.style.opacity = '1';
-                formCard.style.transform = 'translateY(0)';
-            }, 100);
+    
+    document.querySelectorAll('.service-card').forEach(card => {
+        if (card.dataset.serviceId == serviceId) {
+            card.classList.add('selected');
         }
     });
-</script>
+    
+    updateSelectedServicesList();
+    calculateTotal();
+    closeServiceModal();
+}
 
-</body>
-</html>
+function updateSelectedServicesList() {
+    const container = document.getElementById('selectedServicesList');
+    
+    if (selectedServices.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No services selected yet</p>';
+        return;
+    }
+    
+    let html = '';
+    selectedServices.forEach(service => {
+        const total = service.price * service.quantity;
+        html += `
+            <div class="selected-service-item">
+                <div>
+                    <strong>${service.name}</strong>
+                    <small class="text-muted d-block">Qty: ${service.quantity} × $${service.price.toFixed(2)}</small>
+                    ${service.basketsPerWeek ? `<small class="text-muted d-block">📅 ${service.basketsPerWeek} basket(s) per week</small>` : ''}
+                    ${service.basketsPerMonth ? `<small class="text-muted d-block">📆 ${service.basketsPerMonth} baskets per month</small>` : ''}
+                    ${service.bedding ? `<small class="text-muted d-block">🛏️ Blanket cleaning included</small>` : ''}
+                    ${service.priority ? `<small class="text-muted d-block">⚡ Priority service</small>` : ''}
+                </div>
+                <div>
+                    <span class="fw-bold">$${total.toFixed(2)}</span>
+                    <i class="fas fa-trash-alt remove-item ms-2" onclick="removeService('${service.id}')"></i>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function removeService(serviceId) {
+    const index = selectedServices.findIndex(s => s.id == serviceId);
+    if (index !== -1) {
+        selectedServices.splice(index, 1);
+        
+        document.querySelectorAll('.service-card').forEach(card => {
+            if (card.dataset.serviceId == serviceId) {
+                card.classList.remove('selected');
+            }
+        });
+        
+        updateSelectedServicesList();
+        calculateTotal();
+    }
+}
+
+function calculateTotal() {
+    let subtotal = 0;
+    selectedServices.forEach(service => {
+        subtotal += service.price * service.quantity;
+    });
+    
+    const deliveryFee = 5.00;
+    const total = subtotal + deliveryFee;
+    
+    document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+    document.getElementById('total').innerText = total.toFixed(2);
+}
+
+function selectPaymentMethodModal(method, element) {
+    selectedPaymentMethod = method;
+    document.querySelectorAll('.payment-btn-modal').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    element.classList.add('active');
+}
+
+function openCheckoutModal() {
+    if (selectedServices.length === 0) {
+        alert('Please select at least one service first');
+        return;
+    }
+    
+    // Set default dates
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const modalPickupDate = document.getElementById('modalPickupDate');
+    if(modalPickupDate) {
+        modalPickupDate.min = now.toISOString().slice(0, 16);
+        modalPickupDate.value = now.toISOString().slice(0, 16);
+    }
+    
+    const deliveryMin = new Date();
+    deliveryMin.setDate(deliveryMin.getDate() + 1);
+    deliveryMin.setMinutes(deliveryMin.getMinutes() - deliveryMin.getTimezoneOffset());
+    const modalDeliveryDate = document.getElementById('modalDeliveryDate');
+    if(modalDeliveryDate) {
+        modalDeliveryDate.min = deliveryMin.toISOString().slice(0, 16);
+        modalDeliveryDate.value = deliveryMin.toISOString().slice(0, 16);
+    }
+    
+    document.getElementById('checkoutModal').classList.add('active');
+}
+
+function closeCheckoutModal() {
+    document.getElementById('checkoutModal').classList.remove('active');
+}
+
+function showOrderSummary() {
+    // Validate form
+    if (!document.getElementById('modalPickupAddress').value) {
+        alert('Please select a pickup address');
+        return;
+    }
+    
+    if (!document.getElementById('modalDeliveryAddress').value) {
+        alert('Please select a delivery address');
+        return;
+    }
+    
+    if (!document.getElementById('modalPickupDate').value) {
+        alert('Please select a pickup date');
+        return;
+    }
+    
+    if (!document.getElementById('modalDeliveryDate').value) {
+        alert('Please select a delivery date');
+        return;
+    }
+    
+    // Store values for summary
+    const pickupSelect = document.getElementById('modalPickupAddress');
+    const deliverySelect = document.getElementById('modalDeliveryAddress');
+    
+    pickupAddressText = pickupSelect.options[pickupSelect.selectedIndex]?.text || '';
+    deliveryAddressText = deliverySelect.options[deliverySelect.selectedIndex]?.text || '';
+    pickupDateValue = document.getElementById('modalPickupDate').value;
+    deliveryDateValue = document.getElementById('modalDeliveryDate').value;
+    
+    // Build services summary
+    let servicesHtml = '';
+    let subtotal = 0;
+    selectedServices.forEach(service => {
+        const total = service.price * service.quantity;
+        subtotal += total;
+        servicesHtml += `
+            <div class="confirmation-row">
+                <span class="confirmation-label">${service.name} × ${service.quantity}</span>
+                <span class="confirmation-value">$${total.toFixed(2)}</span>
+            </div>
+        `;
+    });
+    
+    document.getElementById('summaryServicesList').innerHTML = servicesHtml;
+    document.getElementById('summaryPickupAddress').innerText = pickupAddressText;
+    document.getElementById('summaryDeliveryAddress').innerText = deliveryAddressText;
+    document.getElementById('summaryPickupDate').innerText = new Date(pickupDateValue).toLocaleString();
+    document.getElementById('summaryDeliveryDate').innerText = new Date(deliveryDateValue).toLocaleString();
+    
+    const paymentMethodText = {
+        'card': '💳 Credit/Debit Card',
+        'cash': '💵 Cash on Delivery',
+        'wallet': '👛 Wallet Balance'
+    };
+    document.getElementById('summaryPaymentMethod').innerText = paymentMethodText[selectedPaymentMethod] || 'Credit/Debit Card';
+    
+    // Build price breakdown
+    const deliveryFee = 5.00;
+    const total = subtotal + deliveryFee;
+    
+    document.getElementById('summaryPriceBreakdown').innerHTML = `
+        <div class="confirmation-row">
+            <span class="confirmation-label">Subtotal:</span>
+            <span class="confirmation-value">$${subtotal.toFixed(2)}</span>
+        </div>
+        <div class="confirmation-row">
+            <span class="confirmation-label">Delivery Fee:</span>
+            <span class="confirmation-value">$${deliveryFee.toFixed(2)}</span>
+        </div>
+    `;
+    document.getElementById('summaryTotal').innerHTML = `Total: $${total.toFixed(2)}`;
+    
+    // Close checkout modal and open summary modal
+    closeCheckoutModal();
+    document.getElementById('summaryModal').classList.add('active');
+}
+
+function closeSummaryModal() {
+    document.getElementById('summaryModal').classList.remove('active');
+}
+
+function submitOrder() {
+    // Create form data
+    const form = document.getElementById('orderForm');
+    
+    // Clear existing hidden inputs (keep CSRF)
+    const existingHidden = form.querySelectorAll('input[type="hidden"]:not([name="_token"])');
+    existingHidden.forEach(input => input.remove());
+    
+    // Add all required fields
+    const fields = {
+        'pickup_address_id': document.getElementById('modalPickupAddress').value,
+        'delivery_address_id': document.getElementById('modalDeliveryAddress').value,
+        'pickup_date': pickupDateValue,
+        'delivery_date': deliveryDateValue,
+        'special_instructions': document.getElementById('modalSpecialInstructions').value,
+        'promotion_code': document.getElementById('modalPromotionCode').value,
+        'payment_method': selectedPaymentMethod,
+        'selected_services': JSON.stringify(selectedServices)
+    };
+    
+    for (const [name, value] of Object.entries(fields)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    }
+    
+    // Close summary modal and submit
+    closeSummaryModal();
+    form.submit();
+}
+
+// Add click handlers to service cards
+document.querySelectorAll('.service-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+        if (e.target.tagName === 'BUTTON') return;
+        openServiceModal(this);
+    });
+});
+
+// Close modals on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeServiceModal();
+        closeCheckoutModal();
+        closeSummaryModal();
+    }
+});
+
+// Close modals when clicking outside
+document.getElementById('serviceModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeServiceModal();
+    }
+});
+
+document.getElementById('checkoutModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeCheckoutModal();
+    }
+});
+
+document.getElementById('summaryModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeSummaryModal();
+    }
+});
+</script>
+@endsection

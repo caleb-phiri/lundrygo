@@ -25,18 +25,26 @@ class RiderOrderController extends Controller
         return view('rider.dashboard', compact('assignedOrders', 'completedOrders', 'totalEarnings'));
     }
     
-    public function index()
+   public function index()
     {
         $orders = Order::where('rider_id', auth()->id())
+            ->with(['user', 'pickupAddress', 'deliveryAddress'])
             ->latest()
-            ->paginate(10);
-        return view('rider.orders', compact('orders'));
+            ->paginate(20);
+        
+        return view('rider.orders.index', compact('orders'));
+    }
+
+    public function show($id)
+    {
+        $order = Order::with(['user', 'pickupAddress', 'deliveryAddress', 'items'])
+            ->where('rider_id', auth()->id())
+            ->findOrFail($id);
+        
+        return view('rider.orders.show', compact('order'));
     }
     
-    public function show(Order $order)
-    {
-        return view('rider.order-details', compact('order'));
-    }
+   
     
     public function accept(Order $order)
     {

@@ -8,6 +8,12 @@
     <a href="{{ route('admin.orders.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
         <i class="fas fa-box me-2"></i> Orders
     </a>
+    <!-- Add this in your sidebar -->
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('admin.users.index') }}?role=rider">
+        <i class="fas fa-motorcycle"></i> Manage Riders
+    </a>
+</li>
     <a href="{{ route('admin.services.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
         <i class="fas fa-tshirt me-2"></i> Services
     </a>
